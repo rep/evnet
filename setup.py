@@ -16,7 +16,7 @@ readme = read_file('README.md')
 
 setup(
 	name='evnet',
-	version = '1.0-3',
+	version = '1.0-4',
 	description='evnet is a networking library built on top of pyev (libev)',
 	long_description=readme,
 	classifiers=['Development Status :: 4 - Beta','License :: OSI Approved :: MIT License','Programming Language :: Python','Topic :: Software Development :: Libraries :: Python Modules'], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers

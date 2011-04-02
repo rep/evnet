@@ -10,7 +10,7 @@ import Queue
 import pyev
 from OpenSSL import SSL
 
-from util import EventGen, WeakMethod
+from .util import EventGen, WeakMethod
 
 default_loop = pyev.default_loop()
 shutdown_callbacks = set()
@@ -122,7 +122,7 @@ class Listener(EventGen):
 			c = self.connclass(sock, addr)
 			self._event('connection', c, addr)
 		except IOError as e:
-			print 'ERROR', e
+			traceback.print_exc()
 			self.read_watcher.stop()
 			self.sock.close()
 			self._event('close', self)
