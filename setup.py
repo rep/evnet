@@ -11,7 +11,7 @@ if sys.version_info >= (3,):
 
 setup(
 	name='evnet',
-	version = '1.0',
+	version = '1.0-1',
 	description='evnet is a networking library built on top of pyev (libev)',
 	author='Mark Schloesser',
 	author_email='ms@mwcollect.org',
