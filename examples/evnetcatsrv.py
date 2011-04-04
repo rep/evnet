@@ -5,10 +5,9 @@ import random
 import struct
 logging.basicConfig(level=logging.DEBUG)
 
-from pwrcall.pyevloop import loop, unloop, listenplain
-from pwrcall.promise import Promise
-from pwrcall.util import EventGen
-
+from evnet import loop, unloop, listenplain
+from evnet.util EventGen
+from evnet.promise import Promise
 
 class WebSockListener(EventGen):
 	def __init__(self, port):

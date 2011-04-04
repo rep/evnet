@@ -4,7 +4,7 @@ import logging
 import traceback
 logging.basicConfig(level=logging.DEBUG)
 
-from pwrcall.pyevloop import PlainClientConnection, loop, unloop
+from evnet import PlainClientConnection, loop, unloop
 
 def filegen(fobj):
 	d = fobj.read(1024**2)
