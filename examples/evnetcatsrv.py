@@ -6,7 +6,7 @@ import struct
 logging.basicConfig(level=logging.DEBUG)
 
 from evnet import loop, unloop, listenplain
-from evnet.util EventGen
+from evnet.util import EventGen
 from evnet.promise import Promise
 
 class WebSockListener(EventGen):
