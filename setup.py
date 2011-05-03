@@ -12,7 +12,8 @@ extra = {}
 if sys.version_info >= (3,):
 	extra['use_2to3'] = True
 
-readme = read_file('README.md')
+try: readme = read_file('README.md')
+except: readme = 'evnet'
 
 setup(
 	name='evnet',
