@@ -32,25 +32,27 @@ def _sigint_cb(watcher, events):
 		if cb.alive():
 			cb()
 
-	watcher.loop.unloop()
+	unloop(watcher.loop)
 
 def hint(sock):
 	ip = sock.getsockname()[0]
 	if not ip.startswith("127."):
 		hints.add(ip)
 
-def loop():
+def loop(l=default_loop):
 	sigint_watcher = pyev.Signal(signal.SIGINT, default_loop, _sigint_cb)
 	sigint_watcher.start()
 	
-	default_loop.loop()
+	if pyev.version()[1] < '4.00': l.loop()
+	else: l.start()
 
-def unloop():
+def unloop(l=default_loop):
 	for cb in shutdown_callbacks:
 		if cb.alive():
 			cb()
 
-	default_loop.unloop()
+	if pyev.version()[1] < '4.00': l.unloop()
+	else: l.stop()
 
 def connectssl(host, port, cert='cert2.pem'):
 	return ClientConnection((host,port), cert=cert)
