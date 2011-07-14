@@ -42,9 +42,12 @@ def hint(sock):
 def loop(l=default_loop):
 	sigint_watcher = pyev.Signal(signal.SIGINT, default_loop, _sigint_cb)
 	sigint_watcher.start()
-	
-	if pyev.version()[1] < '4.00': l.loop()
-	else: l.start()
+
+	try:	
+		if pyev.version()[1] < '4.00': l.loop()
+		else: l.start()
+	except OSError, e:
+		print 'oserror', e, e.args
 
 def unloop(l=default_loop):
 	for cb in shutdown_callbacks:
@@ -391,7 +394,7 @@ class ClientConnection(Connection):
 			self.write_watcher.callback = self._connected
 			self.write_watcher.start()
 		else:
-			logging.critical('socket.error != EINPROGRESS: {0}'.format(eno))
+			logging.critical('socket.error != EINPROGRESS: {0}'.format(errno.errorcode[eno]))
 			self._close('Exception.')
 
 
@@ -537,6 +540,8 @@ class PlainServerConnection(PlainConnection):
 
 
 class pyevThread(threading.Thread):
+	daemon = True
+
 	def __init__(self):
 		threading.Thread.__init__(self)
 		self.aw = pyev.Async(default_loop, self.process)
@@ -544,7 +549,7 @@ class pyevThread(threading.Thread):
 		self.calls = []
 
 	def run(self):
-		default_loop.loop()
+		default_loop.start()
 
 	def process(self, w, e):
 		l = len(self.calls)
@@ -564,9 +569,11 @@ class pyevThread(threading.Thread):
 	def blockingCall(self, f, *a, **kw):
 		q = Queue.Queue()
 		def tmpcaller():
-			r = f(*a, **kw)
-			r._when(q.put)
-			r._except(q.put)
+			try: r = f(*a, **kw)
+			except Exception, e: q.put(e)
+			else:
+				r._when(q.put)
+				r._except(q.put)
 		self.calls.append((tmpcaller, [], {}))
 		self.aw.send()
 		r = q.get()
