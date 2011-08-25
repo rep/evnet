@@ -121,9 +121,10 @@ class MongoConn(EventGen):
 		self.pqs[reqid] = (p, '{0}.$cmd'.format(db), [])
 		return p
 
-	def query(self, coll, q, limit=0, fields=None):
+	def query(self, coll, q, limit=0, fields=None, special={}):
 		p = Promise()
-		reqid = self._sonquery(coll, bson.SON({'$query': q}), limit=limit, fields=fields)
+		special.update({'$query': q})
+		reqid = self._sonquery(coll, bson.SON(special), limit=limit, fields=fields)
 		self.pqs[reqid] = (p, coll, [])
 		return p
 		
