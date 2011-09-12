@@ -1,8 +1,9 @@
 
 import sys
-import logging
+import hashlib
 import random
 import struct
+import logging
 logging.basicConfig(level=logging.DEBUG)
 
 from . import PlainClientConnection, loop, unloop, EventGen
@@ -53,6 +54,10 @@ def mongo_gen_update(collection, spec, doc, upsert=False, multi=False):
 		bson.BSON.encode(doc)
 	)[1]
 
+def mongo_auth_hash(nonce, user, password):
+	storedhash = hashlib.md5('{0}:mongo:{1}'.format(user, password)).hexdigest()
+	temphash = hashlib.md5('{0}{1}{2}'.format(nonce, user, storedhash)).hexdigest()
+	return temphash
 
 class MongoUnpack(object):
 	def __init__(self):
@@ -112,12 +117,30 @@ class MongoConn(EventGen):
 					else:
 						p._resolve(buf)
 
+	
+	def auth(self, db, username, password):
+		ap = Promise()
+		def authfail(e):
+			ap._smash(e)
+		def authed(r):
+			ap._resolve(r)
+		def gotnonce(r):
+			n = r[0]['nonce']
+			key = mongo_auth_hash(n, username, password)
+			p2 = self.command(db, 'authenticate', value=1.0, user=username, nonce=n, key=key)
+			p2._when(authed)
+			p2._except(authfail)
+			
+		p = self.command(db, 'getnonce', value=1.0)
+		p._when(gotnonce)
+		p._except(authfail)
+		return ap
 
 	def command(self, db, cmd, value=1, **kwargs):
 		p = Promise()
 		cmdson = bson.SON([(cmd, value)])
 		cmdson.update(kwargs)
-		reqid = self._sonquery('{0}.$cmd'.format(db), cmdson, limit=0)
+		reqid = self._sonquery('{0}.$cmd'.format(db), cmdson, limit=1)
 		self.pqs[reqid] = (p, '{0}.$cmd'.format(db), [])
 		return p
 
