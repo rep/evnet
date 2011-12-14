@@ -216,6 +216,7 @@ class Connection(EventGen):
 		self.buf = SSLbuf()
 		self._closed = False
 		self._writing = False
+		self._readypromise = Promise()
 		self.peerfp = None
 		self.readbytes = 0
 		self.writebytes = 0
@@ -293,7 +294,11 @@ class Connection(EventGen):
 			pc = self.sslsock.get_peer_certificate()
 			self.peerfp = pc.digest('sha1').replace(':', '').lower()
 			self.read_watcher.start()
+			self._readypromise._resolve(self)
 			self._event('ready')
+
+	def onready(self):
+		return self._readypromise
 
 	def stop(self):
 		if self._closed:
@@ -443,6 +448,7 @@ class PlainConnection(EventGen):
 		self.addr = addr
 
 		self.buf = bytearray()
+		self._readypromise = Promise()
 		self._closed = False
 		self._writing = False
 
@@ -466,6 +472,9 @@ class PlainConnection(EventGen):
 			self.initiate()
 
 
+	def onready(self):
+		return self._readypromise
+
 	def initiate(self):
 		raise EVException('Use subclass of Connection!')
 
@@ -476,6 +485,7 @@ class PlainConnection(EventGen):
 		if serr == 0:
 			hint(self.sock)
 			self.read_watcher.start()
+			self._readypromise._resolve(self)
 			self._event('ready')
 		else:
 			self._close('SO_ERROR: {0}'.format(errno.errorcode[serr]))
@@ -618,3 +628,6 @@ class pyevThread(threading.Thread):
 		self.aw.send()
 		r = q.get()
 		return r
+
+from .promise import Promise
+
