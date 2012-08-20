@@ -367,8 +367,8 @@ class Connection(EventGen):
 				if len(self.buf) < 16384*2:
 					self._event('writable')
 
-		if len(self.buf) and not self.write_watcher.active:
-			self.write_watcher.start()
+		if len(self.buf): self.write_watcher.start()
+		else: self._event('allsent')
 
 		self._writing = False
 
@@ -520,7 +520,9 @@ class PlainConnection(EventGen):
 
 	def _writeloop(self):
 		self._writing = True
-		while not self._closed and len(self.buf):
+		count = 0
+		while not self._closed and len(self.buf) and count < 5:
+			count += 1
 			try:
 				ret = self.sock.send(self.buf)
 			except socket.error as e:
@@ -535,6 +537,9 @@ class PlainConnection(EventGen):
 				del self.buf[:ret]
 				if len(self.buf) < 16384*2:
 					self._event('writable')
+
+		if len(self.buf): self.write_watcher.start()
+		else: self._event('allsent')
 
 		self._writing = False
 
