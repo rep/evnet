@@ -66,8 +66,13 @@ def connectplain(host, port):
 	return PlainClientConnection((host,port))
 
 def listensock(host='', port=0, backlog_limit=5):
-	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	# If you would like to accept dual-stack connections, please bind <::>.
+	ainfo = socket.getaddrinfo(host, 1, socket.AF_UNSPEC, socket.SOCK_STREAM)
+	addr_family = ainfo[0][0]
+	sock = socket.socket(addr_family, socket.SOCK_STREAM)
 	sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	# Set a compatible socket, in order to accept connections from both IPv4 and IPv6 nodes.
+	if addr_family == socket.AF_INET6: sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
 	sock.bind((host, port))
 	sock.listen(backlog_limit)
 	return sock
