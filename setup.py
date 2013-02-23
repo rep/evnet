@@ -26,7 +26,7 @@ setup(
 	license = "MIT/BSD/GPL",
 	keywords = "evnet pyev network asynchronous nonblocking event",
 	url = "https://github.com/rep/evnet",
-	install_requires = ['pyev>=0.5.3-3.8'],
+	install_requires = ['pyev>=0.5.3-3.8', 'pyopenssl'],
 	packages = ['evnet',],
 	**extra
 )
