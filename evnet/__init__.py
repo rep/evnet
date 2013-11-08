@@ -44,8 +44,7 @@ def loop(l=default_loop):
 	sigint_watcher.start()
 
 	try:	
-		if pyev.version()[1] < '4.00': l.loop()
-		else: l.start()
+		l.start()
 	except OSError, e:
 		traceback.print_exc()
 		print 'oserror', e, e.args
@@ -55,8 +54,7 @@ def unloop(l=default_loop):
 		if cb.alive():
 			cb()
 
-	if pyev.version()[1] < '4.00': l.unloop()
-	else: l.stop()
+	l.stop()
 
 def connectssl(host, port, cert=None):
 	if cert == None: raise EVException('connectssl requires a certificate.')
